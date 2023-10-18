@@ -1,16 +1,16 @@
 const postService = require("../services/postService");
 
 // 게시글 생성
-const postAdd = async(req, res) => {
+const postCreate = async(req, res) => {
     try{
-        const {id, title, content, userId} = req.body;
+        const {userId, nickname, content, createdAt, updatedAt} = req.body;
         console.log(req.body);
 
-        //key value 검증
-        if(!id || !title || !content || !userId){
+        //요청값 검증 -> 없으면 null
+        if(!userId || !nickname || !content || !createdAt || !updatedAt){
             return res.status(400).json({message : "KEY_ERROR"});   
         }
-        await postService.postAdd(id, title, content, userId);
+        await postService.postCreate(userId, nickname, content, createdAt, updatedAt);
         return res.status(200).json({message : "postCreated"});
 
     }catch(err){
@@ -19,12 +19,16 @@ const postAdd = async(req, res) => {
     }
 }
 // 게시글 조회
-const postSelect = async(req, res) => {
+const selectPost = async(req, res) => {
     try{
-        const result = await postService.postSelect();
-        res.status(200).json({result})
+        const result = await postService.selectPost();
+        if(!result) {
+            return res.status(200).json({});
+        }else{
+            return res.status(200).json({result})
+        }
     }catch(err){
-        res.status(500).json({message : err.message});
+        return res.status(500).json({message : err.message});
     }
 
 }
@@ -32,12 +36,13 @@ const postSelect = async(req, res) => {
 // 유저 게시글 조회
 const postUserSelect = async(req, res) => {
     try{
-        const id = req.query.id;
-        if(!id){
+        const user_id = req.query.user_id;
+        console.log(user_id)
+        if(!user_id){
             return res.status(400).json({message : "KEY_ERROR"});
         }
 
-        const result = await postService.postUserSelect(id);
+        const result = await postService.postUserSelect(user_id);
         res.status(200).json({result});
         
     }catch(err){
@@ -48,16 +53,17 @@ const postUserSelect = async(req, res) => {
 //유저 게시글 수정 
 const postUpdate = async(req, res) =>{
     try{
-        const id = req.body.id
-        console.log(id);
-        if(!id){
+        const {user_id, nickname} = req.body;
+
+        if(!user_id || !nickname){
             return res.status(400).json({message : "KEY_ERROR"});
         }
-        // ID 값으로 Update
-        await postService.postUpdate(id);
+        // // ID와 nickname 값으로 Update
+        // await postService.postUpdate(user_id, nickname);
 
-        // ID 값으로 update 된 게시글 불러오기
-        const result = await postService.postUserSelect(id);
+        // ID와 nickname 값으로 update 된 게시글 불러오기
+        const result = await postService.postUserSelect(user_id);
+        await postService.postUpdate(user_id, nickname);
         res.status(200).json({result});
 
     }catch(err){
@@ -69,12 +75,12 @@ const postUpdate = async(req, res) =>{
 //게시글 삭제하기
 const postDelete = async(req, res) => {
     try{
-        const id = req.body.id;
-        console.log(id);
-        if(!id){
+        const postId = req.body.postId;
+        console.log(postId);
+        if(!postId){
             return res.status(400).json({message : "KEY_ERROR"});
         }
-         await postService.postDelete(id);
+         await postService.postDelete(postId);
          return res.status(200).json({message : "postingDeleted"});
     }catch(err){
         res.status(500).json({message : err.message});
@@ -99,8 +105,8 @@ const postLike = async(req, res) => {
 }
 
 module.exports ={
-    postAdd,
-    postSelect,
+    postCreate,
+    selectPost,
     postUserSelect,
     postUpdate,
     postDelete,

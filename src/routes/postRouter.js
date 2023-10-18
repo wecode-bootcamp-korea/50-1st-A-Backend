@@ -2,11 +2,12 @@ const express = require("express");
 const postController = require("../controllers/postController");
 const router = express.Router();
 
-//게시글 등록 -> //localhost:3000/posts/postAdd 요청
-router.post("/postAdd", postController.postAdd);
+
+//게시글 등록 
+router.post("/postCreate", postController.postCreate);
 
 //게시글 조회
-router.get("/postSelect", postController.postSelect);
+router.get("/selectPost", postController.selectPost);
 
 //유저 게시글 조회
 router.get("/postUserSelect", postController.postUserSelect);

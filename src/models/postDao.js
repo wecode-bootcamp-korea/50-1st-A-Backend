@@ -17,17 +17,15 @@ myDataSource.initialize().then(() =>{
 });
 
 //게시글 생성
-const createPost = async( id, title, content, userId ) =>{
+const postCreate = async(userId, content) =>{
     try{
         return await myDataSource.query(
-            `INSERT INTO posts(
-                id,
-                title,
-                content,
+            `INSERT INTO threads(
                 userId
-            ) VALUES (?, ?, ?, ?);
+                content
+            ) VALUES (?, ?);
             `,
-            [ id, title, content, userId ]
+            [ userId, content ]
             );
     }catch(err){
         const error = new Error('INVALID_DATA_INPUT');
@@ -37,9 +35,17 @@ const createPost = async( id, title, content, userId ) =>{
 }
 
 //게시글 조회
-const postAllselect = async () => {
+const selectPost = async () => {
     try{
-        return await myDataSource.query(`select * from posts`);
+        return await myDataSource.query(
+            `   
+            select
+                users.nickname,
+                threads.content,
+                threads.createdAt,
+                threads.updatedAt
+            from threads inner join users;  
+            `);
     }catch(err){
         const error = new Error('SELECT ERROR');
         error.statusCode = 500;
@@ -49,31 +55,42 @@ const postAllselect = async () => {
 
 
 //유저 게시글 조회
-const postOneUserSelect = async(id) =>{
+const postOneUserSelect = async(user_id) =>{
+    console.log(user_id);
     try{
         return await myDataSource.query(
-            `select * from posts, users
-                where userId = ?;
+            `
+                select 
+                    threads.id,
+                    users.nickname,
+                    users.profile_image,
+                    threads.content,
+                    threads.created_at
+                from threads
+                inner join users
+                where threads.user_id = users.id and users.id = ?;
             `,
-            [id]
+            [user_id]
             )
     }catch(err){
         const error = new Error("SELECT ERROR");
+        console.log(err)
         error.statusCode = 500;
         throw error;
     }
 }
 
 // 게시글 수정
-const postUpdates = async(id) =>{
-    
+const postUpdates = async(user_id, nickname) =>{
     try{
         return await myDataSource.query(
             `
-                update posts
-                set content = "기존과 다르게 수정한 내용입니다2."
-                where userId = ?;
-            `,[id]);
+            update threads as t
+            inner join users as u on t.user_id = ?
+            set t.content = "수정된 내용입니다."
+            where u.nickname = ?
+            `,[user_id, nickname]
+            );
     }catch(err){
         const error = new Error("UPDATE ERROR");
         error.statusCode = 500;
@@ -82,13 +99,13 @@ const postUpdates = async(id) =>{
 }
 
 //게시글 삭제
-const postDeletes = async(id) =>{
+const postDeletes = async(postId) =>{   
     try{
         return await myDataSource.query(
             `
-                delete from posts
-                where userId = ?
-            `,[id]
+            delete from threads
+            where user_id in (select id from users) and id = ?;
+            `,[postId]
         )
     }catch(err){
         const error = new Error("UPDATE ERROR");
@@ -117,8 +134,8 @@ const postLikes = async(id, userId, postId) => {
 }
 
 module.exports = {
-    createPost,
-    postAllselect,
+    postCreate,
+    selectPost,
     postOneUserSelect,
     postUpdates,
     postDeletes,

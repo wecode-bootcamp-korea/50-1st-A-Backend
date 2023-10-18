@@ -4,17 +4,10 @@ const cors = require('cors');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
 dotenv.config();
-const routes = require("./routes");
+
+const routes = require("./src/routes");
 
 const app = express();
-
-const jwt = require('jsonwebtoken');
-const payload ={foo : 'bar'};
-const secretKey = "mySecretKey";
-const jwtToken = jwt.sign(payload, secretKey);
-
-const decoded = jwt.verify(jwtToken, secretKey);
-console.log(decoded);
 
 
 app.use(cors());
