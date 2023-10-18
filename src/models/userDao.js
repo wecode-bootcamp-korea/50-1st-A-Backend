@@ -25,19 +25,19 @@ myDataSource.initialize()
 	//   myDataSource.destroy();
   });
 
-const createUser = async ( nickname, email, hashedPassword, phoneNumber, birthday, profileImage ) => {
+const createUser = async (nickname, email, password, phoneNumber, birthday, profileImage) => {
 	try {
 		return await myDataSource.query(
 		`INSERT INTO users(
-			nickname,
+			nickname, 
 			email,
-			password,
+			password, 
 			phoneNumber,
 			birthday,
-			profileImage
+			profileImage   
 		) VALUES (?, ?, ?, ?, ?, ?);
 		`,
-		[ nickname, email, hashedPassword, phoneNumber, birthday, profileImage ]
+		[nickname, email, password, phoneNumber, birthday, profileImage]
 	  );
 	} catch (err) {
 		const error = new Error('INVALID_DATA_INPUT');
@@ -63,7 +63,24 @@ const loginUser = async (email, password) =>{
 	}
 } 
 
+
+// 이메일 정합성
+const duplicateCheck = async () =>{
+	try{
+		return await myDataSource.query(
+			`
+				select * from users
+			`
+		)
+	}catch(err){
+		const error = new Error("INVALID_DATA_INPUT");
+		error.statusCode = 500;
+		throw error;
+	}
+} 
+
+
 module.exports = {
-  createUser, loginUser
+  createUser, loginUser, duplicateCheck
 }
 

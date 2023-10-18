@@ -10,18 +10,19 @@ const signUp = async (req, res) => {
 
     //받아오는 데이터에 대한 예외처리
     try{
-        const {nickname, email, password, phoneNumber, birthday, profileImage} = req.body;   // post로 보내진 데이터에 대한 변수 선언
+        const { nickname, email, password, phoneNumber, birthday, profileImage } = req.body;   // post로 보내진 데이터에 대한 변수 선언
+        // console.log(email, password);
 
-        console.log(nickname, email, password, phoneNumber, birthday, profileImage);
-
-        if(!nickname || !email || !password || !phoneNumber || !birthday || !profileImage) {  // 받아온 데이터 검증
+        if(!email || !password) {  // 받아온 데이터 검증
             return res.status(400).json({message : "KEY_ERROR"});
         }
 
-        await userService.signUp(nickname, email, password, phoneNumber, birthday, profileImage); // 검증이 완료되면 받아온 데이터를 service로 넘긴다.
-        return res.status(201).json({message : "SIGNUP_SUCCESS"});
+        const result = await userService.signUp(nickname, email, password, phoneNumber, birthday, profileImage); // 검증이 완료되면 받아온 데이터를 service로 넘긴다.
+        if(result === "EMAIL_DUPLICATE"){
+            return res.status(400).json({message: "EMAIL_DUPLICATE"});
+        }
 
-    }catch(err){   // 데이터 검증 실패
+    }catch(err){   // 데이터 검증 실패s
         console.error(err);
         return res.status(err.statusCode || 500).json({message : err.message});
     }
@@ -37,9 +38,9 @@ const login = async (req, res) => {
             return res.status(400).json({message : "이메일 주소와 패스워드를 확인해 주세요."});
         }
         // 발급 받은 토큰을 받아 응답
-        const token = await userService.login(email, password);
-        res.co
-        return res.status(200).json({accessToken : token});
+        const token = await userService.login(email, password, res);
+        return res.status(200).json({accessToken : token, message : "login_success"});
+        
 
     }catch(err){
         console.log(err);
