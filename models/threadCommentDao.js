@@ -18,6 +18,20 @@ try {
 
 const insertComment = async (userId, content, threadId) => {
   try {
+    //쓰레드가 존재하는지 확인
+    const checkThreadAlive = await appDataSource.query(
+      `
+    select id from threads where id = ?
+    `,
+      [threadId]
+    );
+
+    if (!checkThreadAlive) {
+      const err = new Error("쓰레드가 존재하지 않습니다.");
+      err.statusCode = 404;
+      throw err;
+    }
+
     const result = await appDataSource.query(
       `
     insert into thread_comments (user_id, content, thread_id) values(?,?,?);

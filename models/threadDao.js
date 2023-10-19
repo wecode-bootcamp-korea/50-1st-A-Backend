@@ -68,6 +68,7 @@ const userSelect = async (threadId, userId) => {
     `,
       [threadId, userId]
     );
+    return result;
   } catch (error) {
     const err = new Error("Data read error");
     err.statusCode = 500;
