@@ -10,10 +10,8 @@ const signUp = async (req, res) => {
         .json({ message: "필수 항목을 꼭 기입해야 합니다." });
     }
     const result = await userService.signUp(nickname, email, password);
-    console.log(result);
-    return res.status(200).json({ message: "sign-up successfully" });
+    return res.status(200).json({ message: "sign-up successfully" , result });
   } catch (error) {
-    console.log(error);
     return res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
@@ -50,7 +48,6 @@ const login = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     return res.status(error.statusCode || 500).json({ message: error.message });
   }
 };

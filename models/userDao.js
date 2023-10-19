@@ -11,7 +11,7 @@ const appDataSource = new DataSource({
 
 try {
   appDataSource.initialize().then(() => {
-    console.log("Data Source has been initialized");
+    console.log("USER Data Source has been initialized");
   });
 } catch (err) {
   console.log(err);
@@ -19,14 +19,12 @@ try {
 
 const signUp = async (nickname, email, hashedpassword) => {
   try {
-    console.log(hashedpassword);
-    const result =  await appDataSource.query(
+    const result = await appDataSource.query(
       `
     insert into users (nickname , email , password) values (?,?,?)
     `,
       [nickname, email, hashedpassword]
     );
-    console.log(result);
     return result;
   } catch (error) {
     const err = new Error("Data insert error");
@@ -35,9 +33,25 @@ const signUp = async (nickname, email, hashedpassword) => {
   }
 };
 
+const checkEmail = async (email) => {
+  try {
+    const result = await appDataSource.query(
+      `
+    select email from users where email = ?
+    `,
+      [email]
+    );
+    return result.length > 0;
+  } catch (error) {
+    const err = new Error("Data read error");
+    err.status = 500;
+    throw err;
+  }
+};
+
 const login = async (email) => {
   try {
-    const result =  await appDataSource.query(
+    const result = await appDataSource.query(
       `
     select * from users where email = ?
     `,
@@ -53,5 +67,6 @@ const login = async (email) => {
 
 module.exports = {
   signUp,
-  login
-}
+  login,
+  checkEmail,
+};
