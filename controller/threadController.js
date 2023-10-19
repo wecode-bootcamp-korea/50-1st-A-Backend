@@ -36,11 +36,14 @@ const selectThread = async (req, res) => {
 
 const selectOneThread = async (req, res) => {
   try {
-    const { userId } = req.body;
-    if (!userId) {
-      return res.status(400).json({ message: "userId가 일치하지 않습니다." });
+
+    const userId = req.body.userId;
+    const threadId = req.body.threadId;
+
+    if (!userId || !threadId) {
+      return res.status(400).json({ message: "userId와 threadId가 일치하지 않습니다." });
     }
-    const result = await threadService.oneSelect(userId);
+    const result = await threadService.oneSelect(threadId,userId);
     res.status(200).json({ result });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -72,7 +75,12 @@ const threadUpdate = async (req, res) => {
 
 const threadDelete = async (req, res) => {
   try {
-    const { threadId, userId } = req.body;
+    const acccesToken = req.headers.authorization;
+    const decoded = etc.decoded(acccesToken, secretKey);
+    const userId = decoded.userId;
+
+    const threadId = req.body.threadId;
+
     if (!threadId || !userId) {
       return res.status(400).json({ message: "KEY_ERROR" });
     }
@@ -85,7 +93,12 @@ const threadDelete = async (req, res) => {
 
 const insertLikes = async (req, res) => {
   try {
-    const { userId, threadId } = req.body;
+      const threadId = req.body.threadId;
+
+      const acccesToken = req.headers.authorization;
+      const decoded = etc.decoded(acccesToken, secretKey);
+      const userId = decoded.userId;
+      
     if (!userId || !threadId) {
       return res.status(400).json({ message: "KEY_ERROR" });
     }

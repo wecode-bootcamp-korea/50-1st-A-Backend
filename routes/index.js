@@ -10,5 +10,8 @@ router.use("/users", userRouter.router);
 const threadRouter = require("./threadRouter");
 router.use("/posts", threadRouter.router)
 
+const threadCommentRouter = require("./threadCommentRouter");
+router.use("/comments" , threadCommentRouter.router);
+
 
 module.exports = router;

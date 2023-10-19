@@ -63,13 +63,16 @@ const totalSelect = async () => {
   }
 };
 
-const userSelect = async (userId) => {
+const userSelect = async (threadId, userId) => {
   try {
     return await appDataSource.query(
       `
-    select t.content from users u join threads t on u.id = t.user_id where u.id = ?
+      select t.content , u.nickname as name , t.created_at as createDate ,t.updated_at as updateDate  ,u.profile_image as profileImage
+      from users u
+      join threads t on u.id = t.user_id
+      where t.id = ? and u.id = ?;      
     `,
-      [userId]
+      [threadId, userId]
     );
   } catch (error) {
     const err = new Error("Data read error");

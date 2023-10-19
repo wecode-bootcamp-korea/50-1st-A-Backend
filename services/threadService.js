@@ -18,8 +18,8 @@ const totalSelect = async () => {
   return totalAllSelect;
 };
 
-const oneSelect = async (userId) => {
-  const userSelect = await threadDao.userSelect(userId);
+const oneSelect = async (threadId, userId) => {
+  const userSelect = await threadDao.userSelect(threadId , userId);
 
   return userSelect;
 };
