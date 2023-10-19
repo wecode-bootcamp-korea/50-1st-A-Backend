@@ -1,11 +1,5 @@
 const threadDao = require("../models/threadDao");
 
-// const threadId = async (userId, content) => {
-//   const threadId = await threadDao.threadId(userId, content);
-
-//   return threadId;
-// };
-
 const insertThread = async (content, userId) => {
   const insertThread = await threadDao.insertThread(content, userId);
 
@@ -49,5 +43,4 @@ module.exports = {
   updateThread,
   deleteThread,
   insertLikes,
-  // threadId
 };

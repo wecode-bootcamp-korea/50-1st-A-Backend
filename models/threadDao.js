@@ -11,40 +11,20 @@ const appDataSource = new DataSource({
 
 try {
   appDataSource.initialize().then(() => {
-    console.log("Data Source has been initialized");
+    console.log("Thread Data Source has been initialized");
   });
 } catch (err) {
   console.log(err);
 }
 
-// const threadId = async (userId) => {
-//   try {
-//     console.log("const threadId 부분 ", userId);
-//     const result = await appDataSource.query(
-//       `
-//     select id from threads where user_id = ?;
-//     `,
-//       [userId]
-//     );
-//     console.log("threadId" , result);
-//     return result;
-//   } catch (error) {
-//     const err = new Error("Data input error");
-//     err.statusCode = 500;
-//     throw err;
-//   }
-// };
-
 const insertThread = async (content, userId) => {
   try {
-    console.log("result:" + userId);
     const result = await appDataSource.query(
       `insert into threads (content , user_id) values (?,?);`,
       [content, userId]
     );
     return result;
   } catch (error) {
-    console.log(error.message);
     const err = new Error("Data input error");
     err.statusCode = 500;
     throw err;
@@ -53,9 +33,11 @@ const insertThread = async (content, userId) => {
 
 const totalSelect = async () => {
   try {
-    return await appDataSource.query(`
+    const result = await appDataSource.query(`
     select threads.* ,users.nickname as name, users.profile_image from threads join users on threads.user_id = users.id order by threads.created_at desc
     `);
+    return result || [];
+    //데이터 없을 경우 빈 배열 반환
   } catch (error) {
     const err = new Error("Data read error");
     err.statusCode = 500;
@@ -65,7 +47,19 @@ const totalSelect = async () => {
 
 const userSelect = async (threadId, userId) => {
   try {
-    return await appDataSource.query(
+    // 쓰레드가 존재하는지 확인
+    const checkThreadAlive = await appDataSource.query(
+      `select id from threads where id = ?`,
+      [threadId]
+    );
+
+    if (!checkThreadAlive) {
+      const err = new Error("쓰레드가 존재하지 않습니다.");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const result = await appDataSource.query(
       `
       select t.content , u.nickname as name , t.created_at as createDate ,t.updated_at as updateDate  ,u.profile_image as profileImage
       from users u
@@ -83,12 +77,38 @@ const userSelect = async (threadId, userId) => {
 
 const updateThread = async (content, threadId, userId) => {
   try {
-    console.log(content, threadId, userId);
-    return await appDataSource.query(
+    //본인이 작성한 쓰레드인지 확인
+    const checkMyThread = await appDataSource.query(
+      `
+    select user_id from threads where id = ?
+    `,
+      [threadId]
+    );
+
+    if (!checkMyThread || checkMyThread[0].user_id !== userId) {
+      const err = new Error("권한이 없습니다.");
+      err.statusCode = 403;
+      throw err;
+    }
+
+    // 쓰레드가 존재하는지 확인
+    const checkThreadAlive = await appDataSource.query(
+      `select id from threads where id = ?`,
+      [threadId]
+    );
+
+    if (!checkThreadAlive) {
+      const err = new Error("쓰레드가 존재하지 않습니다.");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const result = await appDataSource.query(
       `
     update threads set content = ? where id = ? and user_id = ?`,
       [content, threadId, userId]
     );
+    return result;
   } catch (error) {
     const err = new Error("Data update error");
     err.statusCode = 500;
@@ -98,12 +118,36 @@ const updateThread = async (content, threadId, userId) => {
 
 const deleteThread = async (threadId, userId) => {
   try {
-    return await appDataSource.query(
+    // 본인이 작성한 쓰레드인지 확인
+    const checkMyThread = await appDataSource.query(
+      `select user_id from threads where id = ?`,
+      [threadId]
+    );
+
+    if (!checkMyThread || checkMyThread[0].user_id !== userId) {
+      const err = new Error("권한이 없습니다.");
+      err.statusCode = 403;
+      throw err;
+    }
+
+    // 쓰레드가 존재하는지 확인
+    const checkThreadAlive = await appDataSource.query(
+      `select id from threads where id = ?`,
+      [threadId]
+    );
+
+    if (!checkThreadAlive) {
+      const err = new Error("쓰레드가 존재하지 않습니다.");
+      err.statusCode = 404;
+      throw err;
+    }
+    const result = await appDataSource.query(
       `
     delete from threads where id = ? and user_id = ?
     `,
       [threadId, userId]
     );
+    return result;
   } catch (error) {
     const err = new Error("Data delete error");
     err.statusCode = 500;

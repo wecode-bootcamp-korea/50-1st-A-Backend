@@ -4,19 +4,28 @@ const secretKey = process.env.SECRET_KEY;
 
 const insertThread = async (req, res) => {
   try {
-    const content = req.body.content;
-
     const acccesToken = req.headers.authorization;
-    console.log(acccesToken);
+    const content = req.body.content;
     const decoded = etc.decoded(acccesToken, secretKey);
-
     const userId = decoded.userId;
-    console.log("userId : ", userId);
+
+    //토큰 보유 여부 확인 예외처리
+    if (!acccesToken) {
+      const err = new Error("로그인이 필요합니다.");
+      err.statusCode = 401;
+      throw err;
+    }
+
+    // 내용 길이 확인 예외처리
+    if (content.length < 1) {
+      const err = new Error("내용이 한 글자 이상이어야 합니다.");
+      err.statusCode = 400;
+      throw err;
+    }
 
     const result = await threadService.insertThread(content, userId);
     return res.status(200).json({ message: "thread 등록성공!", result });
   } catch (error) {
-    console.log(error);
     return res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
@@ -36,14 +45,15 @@ const selectThread = async (req, res) => {
 
 const selectOneThread = async (req, res) => {
   try {
-
     const userId = req.body.userId;
     const threadId = req.body.threadId;
 
     if (!userId || !threadId) {
-      return res.status(400).json({ message: "userId와 threadId가 일치하지 않습니다." });
+      return res
+        .status(400)
+        .json({ message: "KEY_ERROR" });
     }
-    const result = await threadService.oneSelect(threadId,userId);
+    const result = await threadService.oneSelect(threadId, userId);
     res.status(200).json({ result });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -58,10 +68,6 @@ const threadUpdate = async (req, res) => {
 
     const content = req.body.content;
     const threadId = req.body.threadId;
-
-    console.log("유저 아이디 : ", userId);
-    console.log("내용 : ", content);
-    // const threadId = await threadService.threadId(userId);
 
     if (!content || !threadId || !userId) {
       return res.status(400).json({ message: "KEY_ERROR" });
@@ -93,12 +99,12 @@ const threadDelete = async (req, res) => {
 
 const insertLikes = async (req, res) => {
   try {
-      const threadId = req.body.threadId;
+    const threadId = req.body.threadId;
 
-      const acccesToken = req.headers.authorization;
-      const decoded = etc.decoded(acccesToken, secretKey);
-      const userId = decoded.userId;
-      
+    const acccesToken = req.headers.authorization;
+    const decoded = etc.decoded(acccesToken, secretKey);
+    const userId = decoded.userId;
+
     if (!userId || !threadId) {
       return res.status(400).json({ message: "KEY_ERROR" });
     }
