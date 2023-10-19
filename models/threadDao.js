@@ -54,7 +54,7 @@ const insertThread = async (content, userId) => {
 const totalSelect = async () => {
   try {
     return await appDataSource.query(`
-    select threads.* ,users.nickname as name, users.profile_image from threads join users on threads.user_id = users.id order by users.created_at desc
+    select threads.* ,users.nickname as name, users.profile_image from threads join users on threads.user_id = users.id order by threads.created_at desc
     `);
   } catch (error) {
     const err = new Error("Data read error");
