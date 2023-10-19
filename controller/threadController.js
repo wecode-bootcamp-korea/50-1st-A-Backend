@@ -49,9 +49,7 @@ const selectOneThread = async (req, res) => {
     const threadId = req.body.threadId;
 
     if (!userId || !threadId) {
-      return res
-        .status(400)
-        .json({ message: "KEY_ERROR" });
+      return res.status(400).json({ message: "KEY_ERROR" });
     }
     const result = await threadService.oneSelect(threadId, userId);
     res.status(200).json({ result });
@@ -104,6 +102,13 @@ const insertLikes = async (req, res) => {
     const acccesToken = req.headers.authorization;
     const decoded = etc.decoded(acccesToken, secretKey);
     const userId = decoded.userId;
+
+    //토큰 보유 여부 확인 예외처리
+    if (!acccesToken) {
+      const err = new Error("로그인이 필요합니다.");
+      err.statusCode = 401;
+      throw err;
+    }
 
     if (!userId || !threadId) {
       return res.status(400).json({ message: "KEY_ERROR" });

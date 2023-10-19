@@ -158,12 +158,24 @@ const deleteThread = async (threadId, userId) => {
 
 const likes = async (userId, threadId) => {
   try {
-    return await appDataSource.query(
+    // 쓰레드가 존재하는지 확인
+    const checkThreadAlive = await appDataSource.query(
+      `select id from threads where id = ?`,
+      [threadId]
+    );
+
+    if (!checkThreadAlive) {
+      const err = new Error("쓰레드가 존재하지 않습니다.");
+      err.statusCode = 404;
+      throw err;
+    }
+    const result = await appDataSource.query(
       `
     insert into threads_likes (user_id, thread_id) values (?, ?)
     `,
       [userId, threadId]
     );
+    return result;
   } catch (error) {
     const err = new Error("Data insert error");
     err.statusCode = 500;
