@@ -17,9 +17,27 @@ try {
   console.log(err);
 }
 
+// const threadId = async (userId) => {
+//   try {
+//     console.log("const threadId 부분 ", userId);
+//     const result = await appDataSource.query(
+//       `
+//     select id from threads where user_id = ?;
+//     `,
+//       [userId]
+//     );
+//     console.log("threadId" , result);
+//     return result;
+//   } catch (error) {
+//     const err = new Error("Data input error");
+//     err.statusCode = 500;
+//     throw err;
+//   }
+// };
+
 const insertThread = async (content, userId) => {
   try {
-    console.log("result:"+userId);
+    console.log("result:" + userId);
     const result = await appDataSource.query(
       `insert into threads (content , user_id) values (?,?);`,
       [content, userId]
@@ -62,6 +80,7 @@ const userSelect = async (userId) => {
 
 const updateThread = async (content, threadId, userId) => {
   try {
+    console.log(content, threadId, userId);
     return await appDataSource.query(
       `
     update threads set content = ? where id = ? and user_id = ?`,
@@ -111,4 +130,5 @@ module.exports = {
   updateThread,
   deleteThread,
   likes,
+  // threadId,
 };

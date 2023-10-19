@@ -1,5 +1,6 @@
 const threadService = require("../services/threadService");
 const etc = require("../middleware/etc");
+const secretKey = process.env.SECRET_KEY;
 
 const insertThread = async (req, res) => {
   try {
@@ -7,7 +8,6 @@ const insertThread = async (req, res) => {
 
     const acccesToken = req.headers.authorization;
     console.log(acccesToken);
-    const secretKey = process.env.SECRET_KEY;
     const decoded = etc.decoded(acccesToken, secretKey);
 
     const userId = decoded.userId;
@@ -47,9 +47,18 @@ const selectOneThread = async (req, res) => {
   }
 };
 
-const postUpdate = async (req, res) => {
+const threadUpdate = async (req, res) => {
   try {
-    const { content, threadId, userId } = req.body;
+    const acccesToken = req.headers.authorization;
+    const decoded = etc.decoded(acccesToken, secretKey);
+    const userId = decoded.userId;
+
+    const content = req.body.content;
+    const threadId = req.body.threadId;
+
+    console.log("유저 아이디 : ", userId);
+    console.log("내용 : ", content);
+    // const threadId = await threadService.threadId(userId);
 
     if (!content || !threadId || !userId) {
       return res.status(400).json({ message: "KEY_ERROR" });
@@ -61,7 +70,7 @@ const postUpdate = async (req, res) => {
   }
 };
 
-const postDelete = async (req, res) => {
+const threadDelete = async (req, res) => {
   try {
     const { threadId, userId } = req.body;
     if (!threadId || !userId) {
@@ -91,7 +100,7 @@ module.exports = {
   insertThread,
   selectThread,
   selectOneThread,
-  postUpdate,
-  postDelete,
+  threadUpdate,
+  threadDelete,
   insertLikes,
 };
