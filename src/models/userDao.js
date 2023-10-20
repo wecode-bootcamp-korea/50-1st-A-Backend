@@ -3,7 +3,6 @@
 const { DataSource } = require('typeorm');
 const path = require("path")
 const envFilePaht = path.resolve(__dirname, "../utils", ".env");
-
 const dotenv = require("dotenv")
 dotenv.config({path :envFilePaht });
 
@@ -33,7 +32,7 @@ const createUser = async (nickname, email, password, phoneNumber, birthday, prof
 			email,
 			password, 
 			phoneNumber,
-			birthday,
+			birthday,	
 			profileImage   
 		) VALUES (?, ?, ?, ?, ?, ?);
 		`,
@@ -47,15 +46,16 @@ const createUser = async (nickname, email, password, phoneNumber, birthday, prof
 };
 
 //유저 로그인
-const loginUser = async (email, password) =>{
+const loginUser = async (email) =>{
+	console.log(email,"asdasdasd")
 	try{
-		return await myDataSource.query(
-			`
-				select * from users
-				where email = ? and password = ?
-				
-			`,[email, password]
-		)
+        return await myDataSource.query(
+            `
+            SELECT * FROM users
+            WHERE email = ?
+            `,
+            [email]
+        );
 	}catch(err){
 		const error = new Error("INVALID_DATA_INPUT");
 		error.statusCode = 500;

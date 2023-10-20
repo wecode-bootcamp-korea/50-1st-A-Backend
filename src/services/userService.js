@@ -14,22 +14,22 @@ const signUp = async (nickname, email, password, phoneNumber, birthday, profileI
 
     
     //패스워드 길이 제한
-    if(password.length + 1 <= 10) {
+    if(password.length <= 10) {
         const err = new Error("패스워드가 10자를 넘지 않습니다.");
         err.statusCode = 409;
         throw err;
     }
 
-    //이메일 정규식
-    const emailValidation = new RegExp(
-        '^^[a-zA-Z0-9+-_.]+@{1}[a-zA-Z0-9-]+\.{1}[a-zA-Z0-9-.]+$'
-    );
+    // //이메일 정규식
+    // const emailValidation = new RegExp(
+    //     '^^[a-zA-Z0-9+-_.]+@{1}[a-zA-Z0-9-]+\.{1}[a-zA-Z0-9-.]+$'
+    // );
 
-    if(!emailValidation.test(email)){
-        const err = new Error("Email에 .과 @가 포함되지 않았습니다.")
-        err.statusCode = 409;
-        throw err;
-    }
+    // if(!emailValidation.test(email)){
+    //     const err = new Error("Email에 .과 @가 포함되지 않았습니다.")
+    //     err.statusCode = 409;
+    //     throw err;
+    // }
 
     //비밀번호 정규식
     const pwValidation = new RegExp(
@@ -42,18 +42,28 @@ const signUp = async (nickname, email, password, phoneNumber, birthday, profileI
         throw err;
     }
 
-    const hashedPassword = await auth.makehash(password, 10);
-
     //이메일 중복 검사
-     const duple = await userDao.duplicateCheck(); 
+
+    //유저 데이터 가져오기
+    const duple = await userDao.duplicateCheck();
+    // const dbpassword = duple[0].password
+    // console.log(dbpassword)
+    // // db 패스워드 검증
+    // const result = await auth.checkHash(dbpassword, hashedPassword);
+    // c
+
+    // //
+    const hashedPassword = await auth.makehash(password, 10);
+    // // const result = await auth.checkHash(password, hashedPassword);
+    // console.log( "비밀번호 검증 결과" + result);
+    // console.log(duple[1].password);
 
      for(let i = 0; i < duple.length; i++){
         if(email === duple[i].email){
             const err = new Error("EMAIL_DUPLICATE");
             console.log(err.message)
             return err.message;
-         }
-         console.log("Email이 중복되지 않았습니다.")
+        }
      }
 
     // hash 된 password 담기
@@ -66,46 +76,50 @@ const signUp = async (nickname, email, password, phoneNumber, birthday, profileI
         profileImage   
     );
 
-     const result = await auth.checkHash( nickname, email, hashedPassword, phoneNumber, birthday, profileImage);
-     console.log( "비밀번호 검증 결과" + result);
-     
      return createUser; 
 }
 
 //유저 로그인
-const login = async(email, password, res) => {
-
-    const loginUser = await userDao.loginUser( // email과 passowrd를 DAO로 넘긴다.
-        email, 
-        password
+const login = async(email, password, nickname, res) => {
+    
+    try{
+    const loginUser = await userDao.loginUser( // email과 passowrd를 DAO로 넘긴다.     
+        email,
+        password,
+        nickname
     );
 
-    try{
-        const jwtToken = auth.generateToken(email);
+        const jwtToken = await auth.generateToken(email, nickname);
         const secetKey = process.env.SECRET_KEY;
         const decode = await auth.decode(jwtToken, secetKey);
+
         console.log("----------------------------------------------");
 
-    
-            const dbEmail = loginUser[0].email
-            const dbpassword = loginUser[0].password
-            if(decode === dbEmail && password === dbpassword[0].password){
-                console.log("email 또는 password 정보가 일치합니다.");
-                // auth.setTokenCookie(res, jwtToken);
-            }
+
+        const decodeNickname = decode.nickname;
+        const decodedEmail = decode.email;
+
+
+        const dbEmail = loginUser[0].email;
+        const dbPassowrd = loginUser[0].password;
+        const dbNickname = loginUser[0].nickname;
+
+        // 유저 패스워드 복호화
+        const decodePassword = await auth.checkHash(password, dbPassowrd);
+ 
+
+        if(decode.email === dbEmail && loginUser !== null && decodePassword === true && decodeNickname === dbNickname ){
+            console.log("로그인 정보가 일치합니다.");
+            // const cookie = auth.setTokenCookie(res, jwtToken);
             return jwtToken;
-        
-            // console.log("email password 정보가 일치 하지 않습니다.", err);
-            // return {message : "Create Token Fail"}
-        
-    }catch(err){
-        console.log("email 검증에 실패 하였습니다.", err);
-        return {message : "Create Token Fail"}
-    }
-
-
+        }else{
+            console.log("로그인 정보가 일치 하지 않습니다.");
+            return ""
+        }
+     }catch(err){
+        return "";
+     }
 }
-
 
 module.exports = {
     signUp, login

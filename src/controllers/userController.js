@@ -10,19 +10,22 @@ const signUp = async (req, res) => {
 
     //받아오는 데이터에 대한 예외처리
     try{
-        const { nickname, email, password, phoneNumber, birthday, profileImage } = req.body;   // post로 보내진 데이터에 대한 변수 선언
-        // console.log(email, password);
+        const {nickname, email, password, phoneNumber, birthday, profileImage } = req.body;   // post로 보내진 데이터에 대한 변수 선언
+
 
         if(!email || !password) {  // 받아온 데이터 검증
             return res.status(400).json({message : "KEY_ERROR"});
         }
 
-        const result = await userService.signUp(nickname, email, password, phoneNumber, birthday, profileImage); // 검증이 완료되면 받아온 데이터를 service로 넘긴다.
+        const result = await userService.signUp(nickname, email, password, phoneNumber, birthday, profileImage ); // 검증이 완료되면 받아온 데이터를 service로 넘긴다.
+        
         if(result === "EMAIL_DUPLICATE"){
             return res.status(400).json({message: "EMAIL_DUPLICATE"});
+        }else{
+            return res.status(201).json({message: "CREATE_SUCCESS"});
         }
 
-    }catch(err){   // 데이터 검증 실패s
+    }catch(err){   // 데이터 검증 실패
         console.error(err);
         return res.status(err.statusCode || 500).json({message : err.message});
     }
@@ -31,15 +34,20 @@ const signUp = async (req, res) => {
 //유저 로그인
 const login = async (req, res) => {
     try{
-        const email = req.body.email;
-        const password= req.body.password;
+        const {email, password, nickname} = req.body;
 
-        if(!email || !password){
+        if(!email || !password || !nickname){
             return res.status(400).json({message : "이메일 주소와 패스워드를 확인해 주세요."});
         }
+
         // 발급 받은 토큰을 받아 응답
-        const token = await userService.login(email, password, res);
-        return res.status(200).json({accessToken : token, message : "login_success"});
+        const token = await userService.login(email, password, nickname);
+        console.log(token)
+        if(token == ""){    
+            return res.status(400).json({accessToken : token, message : "login_fail"});
+        }else{
+            return res.status(200).json({accessToken : token, message : "login_success"});
+        }
         
 
     }catch(err){

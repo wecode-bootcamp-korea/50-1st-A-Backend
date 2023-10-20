@@ -1,4 +1,4 @@
-const { DataSource } = require('typeorm');
+const { DataSource, ConnectionPoolClosedEvent } = require('typeorm');
 
 const myDataSource = new DataSource({
     type: process.env.TYPEORM_CONNECTION,
@@ -17,15 +17,14 @@ myDataSource.initialize().then(() =>{
 });
 
 //게시글 생성
-const postCreate = async(userId, content) =>{
+const postCreate = async(content) =>{
     try{
         return await myDataSource.query(
             `INSERT INTO threads(
-                userId
+                userid,
                 content
-            ) VALUES (?, ?);
-            `,
-            [ userId, content ]
+            ) VALUES (1, ?)         
+            `,[content]
             );
     }catch(err){
         const error = new Error('INVALID_DATA_INPUT');
@@ -40,10 +39,11 @@ const selectPost = async () => {
         return await myDataSource.query(
             `   
             select
+                threads.id,
                 users.nickname,
+                users.profileImage,
                 threads.content,
-                threads.createdAt,
-                threads.updatedAt
+                threads.createdAt
             from threads inner join users;  
             `);
     }catch(err){

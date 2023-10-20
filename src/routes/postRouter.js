@@ -1,13 +1,13 @@
 const express = require("express");
 const postController = require("../controllers/postController");
 const router = express.Router();
+const auth = require("../middlewares/auth");
 
-
-//게시글 등록 
-router.post("/postCreate", postController.postCreate);
+//게시글 생성
+router.post("/postCreate", auth.verfityToken ,postController.postCreate)
 
 //게시글 조회
-router.get("/selectPost", postController.selectPost);
+router.get("/selectPost",  postController.selectPost);
 
 //유저 게시글 조회
 router.get("/postUserSelect", postController.postUserSelect);

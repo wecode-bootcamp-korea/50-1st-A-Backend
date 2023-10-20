@@ -3,14 +3,15 @@ const postService = require("../services/postService");
 // 게시글 생성
 const postCreate = async(req, res) => {
     try{
-        const {userId, nickname, content, createdAt, updatedAt} = req.body;
-        console.log(req.body);
+        const {nickname, content} = req.body;
+        const user = req.user;
 
         //요청값 검증 -> 없으면 null
-        if(!userId || !nickname || !content || !createdAt || !updatedAt){
+        if(!nickname || !content ){
             return res.status(400).json({message : "KEY_ERROR"});   
         }
-        await postService.postCreate(userId, nickname, content, createdAt, updatedAt);
+
+        await postService.postCreate(nickname, content , user);
         return res.status(200).json({message : "postCreated"});
 
     }catch(err){
@@ -18,19 +19,20 @@ const postCreate = async(req, res) => {
         return res.status(err.statusCode || 500).json({message : err.message});
     }
 }
+
 // 게시글 조회
 const selectPost = async(req, res) => {
     try{
         const result = await postService.selectPost();
-        if(!result) {
-            return res.status(200).json({});
-        }else{
-            return res.status(200).json({result})
+
+        if(result != null){
+            return res.status(200).json(result);
         }
+        return res.status(200).json(result);
+
     }catch(err){
         return res.status(500).json({message : err.message});
     }
-
 }
 
 // 유저 게시글 조회
@@ -53,13 +55,13 @@ const postUserSelect = async(req, res) => {
 //유저 게시글 수정 
 const postUpdate = async(req, res) =>{
     try{
-        const {user_id, nickname} = req.body;
+        const {nickname,content} = req.body;
+        const user = req.user;
+        console.log(user);
 
-        if(!user_id || !nickname){
+        if(!nickname || !content){
             return res.status(400).json({message : "KEY_ERROR"});
         }
-        // // ID와 nickname 값으로 Update
-        // await postService.postUpdate(user_id, nickname);
 
         // ID와 nickname 값으로 update 된 게시글 불러오기
         const result = await postService.postUserSelect(user_id);
