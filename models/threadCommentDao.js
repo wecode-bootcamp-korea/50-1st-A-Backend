@@ -48,7 +48,7 @@ const insertComment = async (userId, content, threadId) => {
 
 const selectComment = async (threadId) => {
   try {
-    return await appDataSource.query(
+    const result = await appDataSource.query(
       `
     select tc.*, u.nickname as name, u.profile_image
     from thread_comments tc
@@ -57,6 +57,7 @@ const selectComment = async (threadId) => {
     `,
       [threadId]
     );
+    return result;
   } catch (error) {
     const err = new Error("Data read error");
     err.statusCode = 500;

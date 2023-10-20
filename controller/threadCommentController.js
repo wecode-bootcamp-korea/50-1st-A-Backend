@@ -6,7 +6,7 @@ const insertComment = async (req, res) => {
   try {
     const acccesToken = req.headers.authorization;
     const content = req.body.content;
-    const threadId = req.body.threadId;
+    const threadId = req.params.threadId;
     const decoded = etc.decoded(acccesToken, secretKey);
     const userId = decoded.userId;
 
@@ -30,7 +30,7 @@ const insertComment = async (req, res) => {
 
 const selectComment = async (req, res) => {
   try {
-    const threadId = req.body.threadId;
+    const threadId = req.params.threadId;
     const result = await threadCommentService.selectComment(threadId);
     if (!result) {
       return res.status(200).json({});

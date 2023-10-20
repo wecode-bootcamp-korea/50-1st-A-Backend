@@ -3,10 +3,10 @@ const threadCommentController = require("../controller/threadCommentController")
 const router = express.Router();
 
 //댓글 등록
-router.post("/insertComment" , threadCommentController.insertComment);
+router.post("/insertComment/:threadId" , threadCommentController.insertComment);
 
 //댓글 조회
-router.get("/selectComment" , threadCommentController.selectComment);
+router.get("/selectComment/:threadId" , threadCommentController.selectComment);
 
 //댓글 수정
 router.put("/updateComment", threadCommentController.updateComment);
